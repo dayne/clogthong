@@ -1,0 +1,73 @@
+#!/usr/bin/bash
+
+echo "#########################"
+echo "# Clog Thong : HOME CFG #"
+echo "#########################"
+
+DEFAULT_DOTS_REPO="git@github.com:dayne/dots.git"
+export DOTS_REPO="${DOTS_REPO:-$DEFAULT_DOTS_REPO}"
+echo "# DOTS_REPO=${DOTS_REPO}"
+sleep 1
+
+DEFAULT_DOTS_BRANCH="master"
+export DOTS_BRANCH="${DOTS_BRANCH:-$DEFAULT_DOTS_BRANCH}"
+
+# need to enable aliases.
+shopt -s expand_aliases
+alias cfg='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+
+# Function to perform git checkout and handle conflicts
+function perform_git_checkout() {
+  local branch="$1"
+  while true; do
+    echo "# Attempt to checkout the CFG HOME branch"
+    sleep 1
+    cfg checkout "$DOTS_BRANCH" 2>&1 | tee /tmp/git_checkout_log.txt
+       
+    # Check if the checkout was successful
+    if [ "${PIPESTATUS[0]}" -eq 0 ]; then
+      echo "Git checkout successful."
+      break
+    else
+      echo "Handling conflicts..."
+      sleep 1
+      # Extract filenames of conflicting files from the git output
+      grep -oE "'[^']+'" /tmp/git_checkout_log.txt | while read -r filename; do
+         echo "handling $filename"
+         # Remove leading and trailing single quotes
+         filename=${filename:1:-1}
+         # Check if the file exists before attempting to move it
+         if [ -e "$filename" ]; then
+           echo "Moving $filename to $filename.orig"
+           mv "$filename" "$filename.orig"
+         fi
+       done
+     fi
+  done
+}
+
+if [ ! -d $HOME/.ssh ]; then
+  mkdir $HOME/.ssh
+  chmod 700 $HOME/.ssh 
+fi
+
+grep github.com ~/.ssh/known_hosts 2>&1 /dev/null
+if [ ! $? -eq 0 ]; then
+  echo "adding github.com to ~/.ssh/known_hosts"
+  ssh-keyscan github.com >> ~/.ssh/known_hosts
+fi
+
+if [ ! -d $HOME/.cfg ]; then
+  echo "# .cfg does not exist"
+  git clone --bare ${DOTS_REPO} $HOME/.cfg
+  if [ -d $HOME/.cfg ]; then
+    perform_git_checkout 
+  else
+    echo "git clone failed"
+    exit 1
+  fi
+else
+  echo "# .cfg already exists - perform_git_checkout"
+  perform_git_checkout 
+  #/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME pull
+fi
