@@ -1,3 +1,6 @@
 [submodule "tools/ruby/chruby"]
 	path = tools/ruby/chruby
 	url = https://gist.github.com/dayne/7f052537545e667872a3c6b4f2498696/
+[submodule "tools/go-lang/golang.installer.dsh"]
+	path = tools/go-lang/golang.installer.dsh
+	url = https://gist.github.com/dayne/63c53402f0045d2c856ac9400bd303bc

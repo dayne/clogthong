@@ -1,0 +1,17 @@
+#!/usr/bin/bash
+
+
+if pgrep -x "Xwayland" > /dev/null; then
+    echo "Xwayland is running... barrier does not support Wayland"
+    exit 1
+fi
+
+if ! command -v barrier > /dev/null; then
+    echo "Barrier not installed .. fixing"
+    sudo apt update
+    sudo apt install barrier
+fi
+
+# hive is server
+# monk is client
+
