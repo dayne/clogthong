@@ -1,0 +1,24 @@
+#!/usr/bin/bash
+
+# set exit on any error
+set -e
+
+cd $HOME
+
+# curl https://github.com/dayne/clogthong.git | 
+
+if ! command -v git > /dev/null; then
+	echo "missing git - fixing"
+	sudo apt install git
+fi
+
+if [ ! -d clogthong ]; then
+	echo "cloning clogthon"
+	git clone https://github.com/dayne/clogthong.git
+fi
+
+cd clogthong
+
+echo "clogthong ready to go"
+
+
