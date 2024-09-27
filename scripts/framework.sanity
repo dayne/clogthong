@@ -1,0 +1,19 @@
+#!/usr/bin/bash	
+# 
+
+term_width=$(tput cols)
+
+if ! command -v t3x > /dev/null; then
+	echo "missing t3x -- so missing libraries for sanity"
+	echo "	fix: install t3x"
+	exit 1
+else
+	source $(t3x -T)
+fi
+
+
+figlet -c -w $term_width framework
+figlet -c -w ${term_width} "sanity"
+sleep 0.2
+
+require_command "kitty" "sudo apt install kitty"

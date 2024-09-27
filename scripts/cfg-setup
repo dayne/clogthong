@@ -14,9 +14,33 @@ export DOTS_BRANCH="${DOTS_BRANCH:-$DEFAULT_DOTS_BRANCH}"
 
 # need to enable aliases.
 shopt -s expand_aliases
-alias cfg='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+#alias cfg='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+
+check_dns() {
+	nslookup github.com > /dev/nulll 2>&1
+	if [ $? -eq 0 ]; then
+		echo "DNS resolution is working - found github"
+	else
+		echo "DNS resolution is not working - check you have internet"
+		exit 1
+	fi
+}
+
+check_ping() {
+	ping -c 1 github.com > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		echo "Ping to github.com is successful - we have Internet + DNS"
+	else
+		echo "Unable to ping github.com"
+		sleep 1
+		check_dns
+		echo "DNS check passed .. perhaps a ping filter - hope the check out works"
+		sleep 1
+	fi
+}
 
 # Function to perform git checkout and handle conflicts
+###/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME pull
 function perform_git_checkout() {
   local branch="$1"
   while true; do
@@ -46,16 +70,21 @@ function perform_git_checkout() {
   done
 }
 
+echo "# checking for \$HOME/.ssh"
 if [ ! -d $HOME/.ssh ]; then
   mkdir $HOME/.ssh
   chmod 700 $HOME/.ssh 
+  echo "# created $HOME/.ssh"
 fi
 
-grep github.com ~/.ssh/known_hosts 2>&1 /dev/null
+grep github.com ~/.ssh/known_hosts >/dev/null  2>&1
 if [ ! $? -eq 0 ]; then
-  echo "adding github.com to ~/.ssh/known_hosts"
+  echo "# adding github.com to ~/.ssh/known_hosts"
   ssh-keyscan github.com >> ~/.ssh/known_hosts
 fi
+
+echo "# checking ping"
+check_ping()
 
 if [ ! -d $HOME/.cfg ]; then
   echo "# .cfg does not exist"
@@ -69,5 +98,105 @@ if [ ! -d $HOME/.cfg ]; then
 else
   echo "# .cfg already exists - perform_git_checkout"
   perform_git_checkout 
-  #/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME pull
 fi
+
+echo "# cfg ready for integration"
+
+CFGBUP=$HOME/.cfg-backup
+if [ ! -d "$CFGBUP" ]; then
+	echo "# creating $CFGBUP"
+	mkdir "$CFGBUP"
+fi
+echo "# CFGBUP dir created in $CFGBUP"
+sleep 1
+
+function cfg() {
+	echo "  # cfg() $@"
+	git --git-dir=$HOME/.cfg/ --work-tree=$HOME $@
+}
+
+function cfg-clone() {
+	if [ ! -d $HOME/.cfg ]; then
+		echo "# cloning repo: ~/.cfg not found"
+		git clone --bare ${DOTS_REPO}  $HOME/.cfg
+		if [ $? -eq 0 ]; then
+			echo "  # clone success"
+		else
+			echo "  # clone failed"
+			exit 1
+		fi
+	else
+		echo "# skipping clone: $HOME/.cfg found"
+	fi
+} 
+
+function cfg-checkout-deconflict {
+  local branch="$1"
+  while true; do
+    echo "# Attempt to checkout the CFG HOME branch"
+    sleep 1
+    cfg checkout "$DOTS_BRANCH" 2>&1 | tee /tmp/git_checkout_log.txt
+       
+    # Check if the checkout was successful
+    if [ "${PIPESTATUS[0]}" -eq 0 ]; then
+      echo "Git checkout successful."
+      break
+    else
+      echo "Handling conflicts..."
+      sleep 1
+      # Extract filenames of conflicting files from the git output
+      grep -oE "'[^']+'" /tmp/git_checkout_log.txt | while read -r filename; do
+         echo "handling $filename"
+         # Remove leading and trailing single quotes
+         filename=${filename:1:-1}
+         # Check if the file exists before attempting to move it
+         if [ -e "$filename" ]; then
+           echo "Moving $filename to $filename.orig"
+           mv "$filename" "$filename.orig"
+         fi
+       done
+     fi
+  done
+}
+
+function cfg-loop() {
+	counter=0
+	echo "# start: cfg-loop()"
+	sleep 1
+	while [ $counter -lt 4 ]; do
+		echo "  # cfg-checkout"
+		sleep 0.5
+    		cfg checkout main 2>&1 | tee /tmp/git_checkout_log.txt
+    		if [ "${PIPESTATUS[0]}" -eq 0 ]; then
+      			echo "# Git checkout successful."
+      			break
+		else
+			echo "    # Handling conflicts..."
+			cat /tmp/git_checkout_log.txt
+      			sleep 1
+      			# Extract filenames of conflicting files from the git output
+      			grep -oE "'[^']+'" /tmp/git_checkout_log.txt | while read -r filename; do
+         			echo "handling $filename"
+         			# Remove leading and trailing single quotes
+         			filename=${filename:1:-1}
+         			# Check if the file exists before attempting to move it
+         			if [ -e "$filename" ]; then
+           				echo "Moving $filename to $filename.orig"
+					if [ -f $filename.orig ]; then
+						echo "skipping creating .orig exists: $filename.orig"
+					else
+           					mv "$filename" "$filename.orig"
+					fi
+         			fi
+			done
+		fi
+
+		sleep 1
+		counter=$((counter + 1 ))
+	done	
+}
+
+echo "###########################################################"
+sleep 1
+cfg-clone
+cfg-loop

@@ -2,7 +2,7 @@
 set -e # exit on any error
 
 REPO="https://github.com/JaKooLit/Ubuntu-Hyprland.git"
-BRANCH="24.04"
+BRANCH=${BRANCH:-"24.04"}
 REPO_DIR="JaKooLit-Ubuntu-Hyprland-$BRANCH"
 
 #verify BRANCH is same as this Ubuntu

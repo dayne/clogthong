@@ -1,0 +1,7 @@
+name: Kitty
+desc: Kitty Terminal
+mode: desktop
+deb-package: kitty
+install:
+  ubuntu: sudo apt install kitty
+  default: sudo apt install kitty

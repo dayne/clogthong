@@ -1,0 +1,10 @@
+#!/usr/bin/bash
+
+cd $HOME
+if [ ! -d t3x ]; then
+	echo "curl t3x/bootstrap.sh | bash -e"
+	curl https://raw.githubusercontent.com/uaf-t3/t3x/main/scripts/bootstrap.sh | bash -e
+else
+	echo "skipping curl - $HOME/t3x exists already"
+	sleep 1
+fi
