@@ -11,7 +11,6 @@ else
 	source $(t3x -T)
 fi
 
-
 figlet -c -w $term_width framework
 figlet -c -w ${term_width} "sanity"
 sleep 0.2
