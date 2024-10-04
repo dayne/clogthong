@@ -1,5 +1,10 @@
 #!/usr/bin/bash
 
+if ! command -v curl > /dev/null; then
+	echo "missing curl .. fixing it"
+	sudo apt install curl
+fi
+
 cd $HOME
 if [ ! -d t3x ]; then
 	echo "curl t3x/bootstrap.sh | bash -e"

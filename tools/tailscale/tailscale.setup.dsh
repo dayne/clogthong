@@ -1,0 +1,69 @@
+#!/usr/bin/bash 
+source $(t3x -T)
+
+#HEADSCALE_URL_DEFAULT="https://headscale-dcm.lab.acep.uaf.edu"
+HEADSCALE_URL_DEFAULT="https://headscale-testbed.lab.acep.uaf.edu"
+#HEADSCALE_URL_DEFAULT="https://headscale-prod.lab.acep.uaf.edu"
+HEADSCALE_URL=${HEADSCALE_URL:=$HEADSCALE_URL_DEFAULT}
+HEADSCALE_AUTH_KEY=${HEADSCALE_AUTH_KEY:=false}
+
+function get_auth_key() {
+
+  echo "Get an auth key with the following steps: (Will or John)"
+  echo "############################# PRE AUTH TOKENS #################################"
+  echo "# ssh headscale-prod.lab.acep.uaf.edu                                         #"
+  echo "# sudo headscale --user [HEADSCALE_USER] preauthkeys create --expiration 24h  #"
+  echo "###############################################################################"
+  sleep 1
+  echo "=========================== AUTH TOKENS ======================================"
+  sleep 1
+  echo " ... I don't understand ... "
+}
+
+function install_tailscale() {
+  verify_internet
+  if ! command -v curl > /dev/null; then 
+    echo "Fatal: Need curl"
+    exit 1
+  fi
+  curl_cmd="curl -fsSL https://tailscale.com/install.sh"
+  echo "Installing repos + tailscale via oneliner"
+  echo "  $curl_cmd | sh"
+  sleep 3
+  ${curl_cmd} | sh
+  if [ $? -eq 0 ]; then
+    echo "Success: Installed tailscale"
+  else
+    echo "Failed to install tailscale"
+    exit 1
+  fi
+}
+
+function check_and_start_tailscale() {
+  verify_internet
+  if [ "$HEADSCALE_AUTH_KEY" == "false" ]; then
+    echo "Error: you need to get & set HEADSCALE_AUTH_KEY!!!"
+    exit 1
+  else
+    echo "Success: HEADSCALE_AUTH_KEY is set."
+  fi
+  CMD="sudo tailscale up --login-server ${HEADSCALE_URL} --auth-key ${HEADSCALE_AUTH_KEY}"
+  echo "Next step: running tailscale up to $HEADSCALE_URL with provided AUTH_KEY"
+  echo "# ${CMD}"
+  $CMD
+  if [ $? -eq 0 ]; then
+    tailscale status
+  else
+    echo "Failed to tailscale up the login-server with authkey"
+    exit 1
+  fi
+}
+
+if command -v tailscale > /dev/null; then
+  echo "Tailscale detected ... skipping install"
+else
+  echo "command not found: tailscale - running installer"
+  install_tailscale
+fi
+
+check_and_start_tailscale

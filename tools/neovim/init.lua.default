@@ -1,0 +1,17 @@
+-- Set tab width to 2 spaces
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+vim.opt.softtabstop = 2
+
+-- Annoying but true
+-- Set tab settings specifically for shell scripts
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "sh","bash" },  -- You can also add more types like 'bash', 'zsh', etc.
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.softtabstop = 2
+    vim.opt_local.expandtab = true
+  end,
+})

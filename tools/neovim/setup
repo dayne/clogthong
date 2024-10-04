@@ -1,0 +1,35 @@
+#!/usr/bin/bash
+
+if command -v nvim > /dev/null; then
+	echo "Skipping install of neovim - already installed"
+else
+	echo "Warning: missing neovim .. fixing"
+	sudo apt install neovim
+fi
+
+if [[ -f $HOME/.config/nvim/init.lua ]]; then
+	echo "Skipping install of init.lua -- already exists"
+else
+	mkdir -p $HOME/.config/nvim/
+	cp -v init.lua.default $HOME/.config/nvim/init.lua
+	echo "Success: init.lua.default in $HOME/.config/nvim/init.lua"
+fi
+
+# check for vi alias and put $HOME/.bash.d/nvim.sh in place if not set
+alias vi 2> /dev/null
+if [ $? -eq 0 ]; then
+	echo "vi alias setup .. skipping install of $HOME/.bash.d/nvim"
+else
+	if [ ! -d $HOME/.bash.d ]; then
+		echo "Error: $HOME/.bash.d does not exist - unable to setup alias file"
+		exit 1
+	fi
+
+	if [ -f $HOME/.bash.d/nvim.sh ]; then
+		echo "Skipping nvim.sh install .. already exists in .bash.d"
+	else
+		cp -v nvim.sh $HOME/.bash.d/nvim.sh
+		echo "nvim.sh installed - restart shell to have vi=nvim"
+	fi
+fi
+
