@@ -1,0 +1,2 @@
+debian: tmate
+hint: sudo apt install tmate

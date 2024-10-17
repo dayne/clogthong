@@ -1,0 +1,5 @@
+debian: lynx
+hint: sudo apt install lynx
+desc: 
+priority: 1
+note: 
