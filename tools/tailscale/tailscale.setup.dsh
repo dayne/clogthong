@@ -8,16 +8,18 @@ HEADSCALE_URL=${HEADSCALE_URL:=$HEADSCALE_URL_DEFAULT}
 HEADSCALE_AUTH_KEY=${HEADSCALE_AUTH_KEY:=false}
 
 function get_auth_key() {
-
-  echo "Get an auth key with the following steps: (Will or John)"
+  echo 
+  echo "#                                                                             #"
   echo "############################# PRE AUTH TOKENS #################################"
-  echo "# ssh headscale-prod.lab.acep.uaf.edu                                         #"
+  echo "#              Get an auth key with the following steps:                      #"
+  echo "#                                                                             #"
+  echo "# ssh headscale-server-address                                                #"
   echo "# sudo headscale --user [HEADSCALE_USER] preauthkeys create --expiration 24h  #"
+  echo "#                                                                             #"
   echo "###############################################################################"
+  echo "#                                                                             #"
+  echo 
   sleep 1
-  echo "=========================== AUTH TOKENS ======================================"
-  sleep 1
-  echo " ... I don't understand ... "
 }
 
 function install_tailscale() {
@@ -42,13 +44,14 @@ function install_tailscale() {
 function check_and_start_tailscale() {
   verify_internet
   if [ "$HEADSCALE_AUTH_KEY" == "false" ]; then
+    get_auth_key 
     echo "Error: you need to get & set HEADSCALE_AUTH_KEY!!!"
     exit 1
   else
     echo "Success: HEADSCALE_AUTH_KEY is set."
   fi
   CMD="sudo tailscale up --login-server ${HEADSCALE_URL} --auth-key ${HEADSCALE_AUTH_KEY}"
-  echo "Next step: running tailscale up to $HEADSCALE_URL with provided AUTH_KEY"
+  echo "Next step: running tailscale up to ${HEADSCALE_URL} with provided AUTH_KEY"
   echo "# ${CMD}"
   $CMD
   if [ $? -eq 0 ]; then
