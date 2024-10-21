@@ -1,0 +1,5 @@
+desc: a test
+website: https://github.com/jvanrhyn/github-contributions-tui
+detect: 
+  dir: $HOME/repos/github-contributions-tui
+install: 

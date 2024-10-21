@@ -1,0 +1,4 @@
+description: homebrew
+hint: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+website: https://brew.sh/
+bash.d: d.brew.sh

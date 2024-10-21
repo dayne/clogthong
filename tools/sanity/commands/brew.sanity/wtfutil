@@ -1,0 +1,4 @@
+command: wtf
+install: brew install wtfutil
+desc: personal information dashboard for your terminal
+website: https://github.com/wtfutil/wtf

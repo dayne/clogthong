@@ -1,0 +1,4 @@
+desc: Go TUI for Ldap
+website: https://github.com/Macmod/godap
+install: brew install godap
+depends: brew
