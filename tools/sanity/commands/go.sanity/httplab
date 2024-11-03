@@ -1,0 +1,4 @@
+website: https://github.com/qustavo/httplab
+desc: interactive web server lets you inspect HTTP requests & forge responses
+install:
+  go: go install github.com/gchaincl/httplab/cmd/httplab@latest

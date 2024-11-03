@@ -1,0 +1,5 @@
+website: https://github.com/keithknott26/datadash
+install: 
+  sh: go install github.com/keithknott26/datadash@latest
+verdict: ignore
+desc: neat looking stale project

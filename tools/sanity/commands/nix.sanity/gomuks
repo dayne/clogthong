@@ -1,0 +1,4 @@
+website: https://docs.mau.fi/gomuks/index.html
+desc: Matrix CLI interface
+install:
+  nix: nix-env -iA nixpkgs.gomuks

@@ -1,0 +1,7 @@
+desc: command line dither tool
+website: https://github.com/makew0rld/didder
+install:
+  go: 
+  brew: 
+    - brew tap make0rld/tap
+    - brew install didder
