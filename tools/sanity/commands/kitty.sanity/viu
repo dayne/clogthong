@@ -1,0 +1,3 @@
+desc:  view images from the terminal written in Rust. It is basically the front-end of viuer.
+website: https://github.com/atanunq/viu
+cargo: cargo install viu

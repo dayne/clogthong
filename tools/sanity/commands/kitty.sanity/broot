@@ -1,0 +1,5 @@
+desc:
+website: https://dystroy.org/broot
+install: cargo install --locked broot --features cliboard broot
+deps:
+  debian: build-essential libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
