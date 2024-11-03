@@ -1,0 +1,16 @@
+#!/usr/bin/bash
+
+TARGET_DIR=/home
+
+df_details=$(df -T ${TARGET_DIR} | tail -n 1)
+fstype=$(echo $df_details | awk '{print $2}')
+
+echo fstype=$fstype
+case $fstype in 
+  "ext4")
+    echo ext4 not viable target for snapper
+    ;;
+  *)
+    echo "Unknown"
+    ;;
+esac
