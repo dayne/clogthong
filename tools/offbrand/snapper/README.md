@@ -2,6 +2,8 @@
 
 http://snapper.io/
 
+Works with btrfs, **ext4 (discontinued)** and thin-provisioned LVM volumes
+
 ## Usage
 
 To create a snapshot of your home directory using Snapper, you first need to ensure Snapper is installed and configured on your system. Assuming that Snapper is already set up, here’s a step-by-step guide to create a snapshot:
