@@ -1,18 +1,28 @@
 #!/usr/bin/bash
 
 if command -v nvim > /dev/null; then
-	echo "Skipping install of neovim - already installed"
+	echo "Skipping install of neovim .. already installed"
 else
 	echo "Warning: missing neovim .. fixing"
 	sudo apt install neovim
 fi
 
 if [[ -f $HOME/.config/nvim/init.lua ]]; then
-	echo "Skipping install of init.lua -- already exists"
+	echo "Skipping install of init.lua .. already exists"
 else
 	mkdir -p $HOME/.config/nvim/
 	cp -v init.lua.default $HOME/.config/nvim/init.lua
 	echo "Success: init.lua.default in $HOME/.config/nvim/init.lua"
+fi
+
+NVIM_VERSION="$(nvim --version | head -n 1)"
+if [ "$(nvim --version | head -n 1)" == "NVIM v0.4.4" ]; then
+  echo "Warning: Old NVIM DETECTED!!!  $NVIM_VERSION"
+  if [[ -f $HOME/.config/nvim/init.vim ]]; then
+    echo "Skipping init.vim default .. file exists"
+  else
+    cp -v init.vim.default $HOME/.config/nvim/init.vim
+  fi
 fi
 
 # check for vi alias and put $HOME/.bash.d/nvim.sh in place if not set
