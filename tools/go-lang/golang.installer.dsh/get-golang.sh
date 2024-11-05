@@ -7,7 +7,7 @@ set -e
 
 GOROOT=${GOROOT:-"$HOME/.go"}
 GOPATH=${GOPATH:-"$HOME/go"}
-GO_VERSION="1.22.2"
+GO_VERSION="1.23.2"
 
 get_platform() {
   if ! command -v uname > /dev/null; then
