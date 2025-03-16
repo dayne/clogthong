@@ -1,0 +1,54 @@
+#!/usr/bin/bash
+SCRIPT_DIR=$(cd $(dirname $BASH_SOURCE[0]) > /dev/null; pwd)
+cd $SCRIPT_DIR
+
+# if debian based ensure you have following dependancies
+# sudo apt install libgtk-4-dev libadwaita-1-dev git libncurses-dev blueprint-compiler
+
+if ! command -v zig > /dev/null; then 
+  echo "Error: Missing zig"
+  echo "   hint: ~/.bash.d/zig.sh"
+  exit 1
+fi
+
+ZIG_VERSION_NEEDED="0.14.0"
+ZIG_VERSION=`zig version`
+if [ "$ZIG_VERSION" != "$ZIG_VERSION_NEEDED" ]; then
+  echo "Error zig version not right."
+  echo "    Want: $ZIG_VERSION_NEEDED  Have: $ZIG_VERSION"
+  echo ""
+  exit 1
+fi
+
+if [ ! -d $HOME/repos/ghostty ]; then
+  echo "Missing ghostty checkout: $HOME/repos/ghostty"
+  mkdir -p $HOME/repos
+  cd $HOME/repos
+  if git clone https://github.com/ghostty/ghostty; then
+    echo "Cloned ghostty into: $HOME/repos/ghostty"
+  else
+    echo "Failed to clone ghostty into: $HOME/repos/ghostty"
+    exit 1
+  fi
+else
+  echo "Found ghostty repo: $HOME/repos/ghostty"
+fi
+
+cd $HOME/repos/ghostty
+
+echo -n "Doing git pull: "
+if ! git pull; then
+  echo "Failed git pull .. debug that"
+  exit 1
+fi
+
+CMD="zig build -p $HOME/.local -Doptimize=ReleaseFast"
+echo "Running: $CMD"
+sleep 0.2
+${CMD}
+if [ $? -eq 0 ]; then
+  echo "Build successful .. restart / launch your ghostty"
+else
+  echo "Build failed ... :("
+  exit 1
+fi
