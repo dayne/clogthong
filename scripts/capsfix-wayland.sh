@@ -12,9 +12,10 @@ fi
 
 dconf write \
       /org/gnome/desktop/input-sources/xkb-options \
-      "['caps:ctrl_modifier']"
+      "['ctrl:nocaps']"
+      # "['caps:ctrl_modifier']"
 if [ $? -eq 0 ]; then
-	echo "success: caps:ctrl_modifier xkb-option set"
+	echo "success: ctrl:nocaps xkb-option set"
 else
 	echo "dconf write xkb-options failed"
 fi

@@ -3,7 +3,7 @@ config_file="$HOME/.config/hypr/UserConfigs/UserSettings.conf"
 xkb_options="caps:ctrl_modifier"
 
 # verify hyprland context
-if ! command-v hyprland; then
+if ! command -v hyprland; then
     echo "hyprland not available - no point in messing with this"
     exit 1
 fi
