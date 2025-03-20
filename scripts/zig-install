@@ -3,7 +3,8 @@
 # 
 # SOURCE_URL="https://ziglang.org/download/0.13.0/zig-0.13.0.tar.xz"
 ZIG_VERSION="0.14.0"
-ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz"
+ARCH="$(uname -m)"
+ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-linux-${ARCH}-${ZIG_VERSION}.tar.xz"
 ZIG_DL_FILE="$(basename $ZIG_URL)"
 ZIG_DIR="$(basename $ZIG_DL_FILE .tar.xz)"
 

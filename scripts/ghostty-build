@@ -1,9 +1,30 @@
 #!/usr/bin/bash
 SCRIPT_DIR=$(cd $(dirname $BASH_SOURCE[0]) > /dev/null; pwd)
 cd $SCRIPT_DIR
+REPO_DIR="$HOME/repos/ghostty"
+REPO_URL="https://github.com/ghostty-org/ghostty"
 
 # if debian based ensure you have following dependancies
-# sudo apt install libgtk-4-dev libadwaita-1-dev git libncurses-dev blueprint-compiler
+if [ -f /etc/debian_version ]; then
+  if [ ! -d $REPO_DIR ]; then
+    echo "Did not detect previous setup ... installing debian dependancies"
+    echo "sudo apt install libgtk-4-dev libadwaita-1-dev git \ " 
+    echo "                 libncurses-dev blueprint-compiler"
+    sleep 1
+
+    sudo apt update && sudo apt install libgtk-4-dev libadwaita-1-dev \
+                                git libncurses-dev blueprint-compiler 
+
+    if [ $? -eq 0 ]; then
+      echo "Success: dependancies installed"
+      sleep 1
+    else
+      echo "Error: Unable to install dependancies"
+      echo "       ... continuing on but recommend revisiting/debugging"
+      sleep 3
+    fi
+  fi
+fi
 
 if ! command -v zig > /dev/null; then 
   echo "Error: Missing zig"
@@ -20,11 +41,12 @@ if [ "$ZIG_VERSION" != "$ZIG_VERSION_NEEDED" ]; then
   exit 1
 fi
 
-if [ ! -d $HOME/repos/ghostty ]; then
-  echo "Missing ghostty checkout: $HOME/repos/ghostty"
-  mkdir -p $HOME/repos
-  cd $HOME/repos
-  if git clone https://github.com/ghostty/ghostty; then
+if [ ! -d $REPO_DIR ]; then
+  echo "Missing ghostty checkout: $REPO_DIR"
+  mkdir -p $(dirname $REPO_DIR)
+  cd $(dirname $REPO_DIR)
+  echo "Cloning $REPO_URL into $REPO_DIR"
+  if git clone $REPO_URL; then
     echo "Cloned ghostty into: $HOME/repos/ghostty"
   else
     echo "Failed to clone ghostty into: $HOME/repos/ghostty"
