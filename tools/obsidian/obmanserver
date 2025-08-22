@@ -1,0 +1,96 @@
+#!/usr/bin/bash
+
+
+# verify podman
+# verify podman pull lscr.io/linuxserver/obsidian:latest 
+# TODO: update the image option
+# verify ~/obsidian
+
+CONF_DIR=$HOME/ls-ob/config
+DATA_DIR=$HOME/ls-ob/data
+OB_PORT=5150
+
+function verify_setup() {
+  echo "TODO verify_setup() not done"    
+}
+
+function is_running() {
+  if podman ps --format '{{.Names}}' | grep -q '^obsidian$'; then
+    echo "Obsidian container is running"
+    return 0
+  else
+    echo "Obsidian container is not running"
+    return 1
+  fi
+}
+
+function pull_image() {
+  podman pull lscr.io/linuxserver/obsidian.latest
+}
+
+function start_obcon() {
+  podman run -d \
+    --name=obsidian \
+    -e PUID=$(id -u) \
+    -e PGID=$(id -g) \
+    -e TZ=America/Anchorage \
+    -p $OB_PORT:3000 \
+    -v $CONF_DIR:/config \
+    -v $DATA_DIR:/data \
+    --restart unless-stopped \
+    lscr.io/linuxserver/obsidian:latest
+
+  LAUNCH_CODE=$? 
+  if [ $LAUNCH_CODE -eq 0 ]; then
+    echo 'Success: podman run of linuxserver/obsidian done'
+    echo "Open a browser and go to: http://localhost:$OB_PORT/"
+  else
+    echo "Fail: podman run failed for linuxserver/obsidian"
+    exit $LAUNCH_CODE
+  fi
+}
+
+function stop() {
+  local CMD="podman stop obsidian"
+  if is_running; then
+    $CMD
+  else
+    echo "obsidian image not running .. not calling: $CMD"
+  fi
+}
+
+function do_start() {
+  verify_setup
+  echo "Launching obsidian on port $OB_PORT"
+  if is_running; then
+    echo "Skipping run .. already running"
+  else
+    start_obcon
+  fi
+}
+
+function do_stop() {
+  stop
+}
+
+function do_status {
+  if is_running; then
+    echo "Check it out at http://localhost:$OB_PORT"
+  fi
+}
+
+function do_help() {
+  echo "$0 [command] "
+  echo "  start   - launch container server"
+  echo "  stop    - stop container server"
+  echo "  status  - check status"
+  echo "  help    - this message"
+}
+
+cmd="do_${1:-start}"
+
+if declare -f "$cmd" > /dev/null; then
+  "$cmd"
+else
+  do_start
+fi
