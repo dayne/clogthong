@@ -1,17 +1,16 @@
 #!/usr/bin/bash
 
 
-# verify podman
-# verify podman pull lscr.io/linuxserver/obsidian:latest 
-# TODO: update the image option
-# verify ~/obsidian
-
 CONF_DIR=$HOME/ls-ob/config
 DATA_DIR=$HOME/ls-ob/data
 OB_PORT=5150
 
 function verify_setup() {
   echo "TODO verify_setup() not done"    
+  # verify podman
+  # verify podman pull lscr.io/linuxserver/obsidian:latest 
+  # TODO: update the image option
+  # verify ~/obsidian
 }
 
 function is_running() {
@@ -79,11 +78,20 @@ function do_status {
   fi
 }
 
+function do_setup {
+  if is_running; then
+    echo "Huh.. no need for setup, it is already running"
+  else
+    verify_setup
+  fi
+}
+
 function do_help() {
   echo "$0 [command] "
   echo "  start   - launch container server"
   echo "  stop    - stop container server"
   echo "  status  - check status"
+  echo "  setup   - setup and pull image"
   echo "  help    - this message"
 }
 
