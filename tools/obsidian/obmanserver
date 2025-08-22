@@ -6,11 +6,26 @@ DATA_DIR=$HOME/ls-ob/data
 OB_PORT=5150
 
 function verify_setup() {
-  echo "TODO verify_setup() not done"    
   # verify podman
+  install_podman
   # verify podman pull lscr.io/linuxserver/obsidian:latest 
-  # TODO: update the image option
+  if ! is_running; then
+    pull_image
+  fi
   # verify ~/obsidian
+  if [ -d $CONF_DIR ]; then
+    echo "exists: CONF_DIR=$CONF_DIR"
+  else
+    echo "Verify failure: CONF_DIR does not exist: $CONF_DIR"
+    exit 1
+  fi
+
+  if [ -d "$DATA_DIR" ]; then
+    echo "exists: DATA_DIR=$DATA_DIR"
+  else
+    echo "Verify failure: DATA_DIR does not exist: $DATA_DIR"
+    exit 1
+  fi
 }
 
 function is_running() {
@@ -23,8 +38,23 @@ function is_running() {
   fi
 }
 
+function install_podman() {
+  if ! command -v podman; then
+    sudo apt update && sudo apt install podman
+    echo 'alias docker=podman'
+  else
+    echo "skipping podman install ...already have podman"
+  fi
+}
+
 function pull_image() {
-  podman pull lscr.io/linuxserver/obsidian.latest
+  if ! is_running; then
+    echo "pulling latest image: lcr.io/linuxserver/obsidian.latest"
+    podman pull lscr.io/linuxserver/obsidian.latest
+  else
+    echo "Failed pull_image: the image is currently running . stop before pull"
+    exit 1
+  fi
 }
 
 function start_obcon() {
@@ -49,10 +79,15 @@ function start_obcon() {
   fi
 }
 
-function stop() {
+function do_stop() {
   local CMD="podman stop obsidian"
   if is_running; then
-    $CMD
+    if $CMD; then
+      echo "success: container stopped"
+    else
+      echo "failed: $CMD"
+      exit 1
+    fi
   else
     echo "obsidian image not running .. not calling: $CMD"
   fi
@@ -66,10 +101,6 @@ function do_start() {
   else
     start_obcon
   fi
-}
-
-function do_stop() {
-  stop
 }
 
 function do_status {
@@ -86,12 +117,31 @@ function do_setup {
   fi
 }
 
+function do_update() {
+  system_sane
+  echo "doing update: stopping image, removing old container, pull latest" 
+  echo "data will be safe because it is stored in $DATA_DIR, and $CONF_DIR"
+  sleep 1
+  echo "startign pull"
+  if podman pull lscr.io/linuxserver/obsidian:latest; then
+    echo "latest image pulled .. ready to stop and re-run"
+  else
+    echo "pulling latest image failed .. "
+    exit 1
+  fi
+
+  do_stop
+
+  do_start
+}
+
 function do_help() {
   echo "$0 [command] "
   echo "  start   - launch container server"
   echo "  stop    - stop container server"
   echo "  status  - check status"
   echo "  setup   - setup and pull image"
+  echo "  update  - update local image"
   echo "  help    - this message"
 }
 
@@ -100,5 +150,6 @@ cmd="do_${1:-start}"
 if declare -f "$cmd" > /dev/null; then
   "$cmd"
 else
+  echo "no valid command found '$cmd' - defaulting to do_start"
   do_start
 fi
