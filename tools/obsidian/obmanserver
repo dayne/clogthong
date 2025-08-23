@@ -3,12 +3,15 @@
 
 CONF_DIR=$HOME/ls-ob/config
 DATA_DIR=$HOME/ls-ob/data
+IMAGE='lscr.io/linuxserver/obsidian:latest'
 OB_PORT=5150
+PUID="${PUID:-$(id -u)}"
+PGID="${PGID:-$(id -g)}"
 
 function verify_setup() {
   # verify podman
   install_podman
-  # verify podman pull lscr.io/linuxserver/obsidian:latest 
+  # verify podman pull $IMAGE
   if ! is_running; then
     pull_image
   fi
@@ -16,15 +19,28 @@ function verify_setup() {
   if [ -d $CONF_DIR ]; then
     echo "exists: CONF_DIR=$CONF_DIR"
   else
-    echo "Verify failure: CONF_DIR does not exist: $CONF_DIR"
-    exit 1
+    echo "Verify failure: CONF_DIR does not exist: $CONF_DIR ... creating it"
+    mkdir -p $CONF_DIR
   fi
 
   if [ -d "$DATA_DIR" ]; then
     echo "exists: DATA_DIR=$DATA_DIR"
   else
-    echo "Verify failure: DATA_DIR does not exist: $DATA_DIR"
-    exit 1
+    echo "Verify failure: DATA_DIR does not exist: $DATA_DIR ... creating it"
+    mkdir -p $DATA_DIR
+  fi
+  
+  check_selinux
+}
+
+function check_selinux() {
+  if command -v getenforce > /dev/null 2>&1; then
+    SEL=$(getenforce || true)
+    echo "-- SELinux --"
+    echo "SELinux status: $SEL"
+    echo "If enforcing ... need to add :Z to -v moutns"
+  else
+    echo "SELinux not detected (no getenforce) .. skipping checks"
   fi
 }
 
@@ -48,9 +64,10 @@ function install_podman() {
 }
 
 function pull_image() {
+  
   if ! is_running; then
-    echo "pulling latest image: lcr.io/linuxserver/obsidian.latest"
-    podman pull lscr.io/linuxserver/obsidian.latest
+    echo "pulling latest image: $IMAGE"
+    podman pull $IMAGE
   else
     echo "Failed pull_image: the image is currently running . stop before pull"
     exit 1
@@ -58,16 +75,19 @@ function pull_image() {
 }
 
 function start_obcon() {
-  podman run -d \
+  local cmd="  podman run -d \
     --name=obsidian \
-    -e PUID=$(id -u) \
-    -e PGID=$(id -g) \
+    -e PUID=$PUID \
+    -e PGID=$PGID \
+    -e UMASK=002 \
     -e TZ=America/Anchorage \
     -p $OB_PORT:3000 \
     -v $CONF_DIR:/config \
     -v $DATA_DIR:/data \
     --restart unless-stopped \
-    lscr.io/linuxserver/obsidian:latest
+    lscr.io/linuxserver/obsidian:latest"
+  echo $cmd
+  $cmd
 
   LAUNCH_CODE=$? 
   if [ $LAUNCH_CODE -eq 0 ]; then
@@ -94,7 +114,7 @@ function do_stop() {
 }
 
 function do_start() {
-  verify_setup
+  #verify_setup
   echo "Launching obsidian on port $OB_PORT"
   if is_running; then
     echo "Skipping run .. already running"
@@ -133,6 +153,10 @@ function do_update() {
   do_stop
 
   do_start
+}
+
+function do_unsharefix() {
+  podman unshare chown -R $(id -u):$(id -g) ~/ls-ob/config ~/ls-ob/data
 }
 
 function do_help() {
