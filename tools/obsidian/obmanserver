@@ -5,6 +5,7 @@ CONF_DIR=$HOME/ls-ob/config
 DATA_DIR=$HOME/ls-ob/data
 IMAGE='lscr.io/linuxserver/obsidian:latest'
 OB_PORT=5150
+OB_SPORT=5151 #ssl
 PUID="${PUID:-$(id -u)}"
 PGID="${PGID:-$(id -g)}"
 
@@ -82,6 +83,7 @@ function start_obcon() {
     -e UMASK=002 \
     -e TZ=America/Anchorage \
     -p $OB_PORT:3000 \
+    -p $OB_SPORT:3001 \
     -v $CONF_DIR:/config \
     -v $DATA_DIR:/data \
     --restart unless-stopped \
