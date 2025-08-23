@@ -167,6 +167,10 @@ function do_help() {
   echo "  setup   - setup and pull image"
   echo "  update  - update local image"
   echo "  help    - this message"
+  echo 
+  echo "### hint (chromium app) ##################"
+  echo "# chromium --app=http://localhost:$OB_PORT" 
+  echo "##########################################"
 }
 
 cmd="do_${1:-start}"
